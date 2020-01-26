@@ -9,6 +9,7 @@ GPIO Modules
 ------------
 
 - Raspberry Pi GPIO (`raspberrypi`)
+- Orange Pi GPIO (`orangepi`)
 - PCF8574 IO chip (`pcf8574`)
 - PiFaceDigital 2 IO board (`piface2`)
 - Beaglebone GPIO (`beaglebone`)
@@ -19,6 +20,7 @@ Sensors
 - LM75 i2c temperature sensor (`lm75`)
 - DHT11 DHT22 AM2302 temperature/humidity sensor (`dht22`)
 - BH1750 light level sensor (`bh1750`)
+- DS18S20, DS1822, DS18B20, DS1825, DS28EA00, MAX31850K one-wire temperature sensors: (`ds18b`)
 
 Installation
 ------------
@@ -91,7 +93,6 @@ digital_inputs:
     pullup: yes
     pulldown: no
 ```
-
 ### Sensors
 
 Receive updates on the value of a sensor by subscribing to the `home/sensor/<sensor input name>` topic. In the following example, this would be `home/sensor/temperature`:
@@ -149,6 +150,29 @@ sensor_inputs:
     interval: 10
     digits: 2
     
+sensor_modules:
+  - name: ds18b22
+    module: ds18b
+    type: DS18S20
+    address: 000803702e49
+
+sensor_inputs:
+  - name: ds18b22
+    module: ds18b22
+    interval: 60
+    digits: 2
+```
+
+### OrangePi boards
+
+You need to specify what OrangePi board you use
+
+```yaml
+gpio_modules:
+  - name: orangepi
+    module: orangepi
+    board: zero # Supported: ZERO, R1, ZEROPLUS, ZEROPLUS2H5, ZEROPLUS2H3, PCPCPLUS, ONE, LITE, PLUS2E, PC2, PRIME
+    mode: board
 ```
 
 #### SSL/TLS
@@ -194,6 +218,22 @@ For example, to set an output named `light` on for one second, publish `1000` as
 
 If you want to force an output to always set to on/off for a configured amount of time, you can add `timed_set_ms` to your output config. This will mean that if you send "ON" to `myprefix/output/light/set`, then it will turn the light on for however many milliseconds are configured in `timed_set_ms` and then turn it off again. Whether the light is on already or not, sending "ON" will make the light eventually turn off after `timed_set_ms` milliseconds. This also works inversely with sending "OFF", which will turn the light off, then on after `timed_set_ms` milliseconds, so don't expect this to always keep your devices set to on/off.
 
+#### Interrupts
+
+Interrupts may be used for inputs instead of polling for raspberry modules. Specify `interrupt` and a strategy `rising`, `falling` or `both` to switch from polling to interrupt mode. The `bouncetime` is default `100ms` but may be changed (at least 1ms). The interrupt trigger will send a configurable `interrupt_payload` (default: `"INT"`) and not the current value of the pin: reading the current pin value in the ISR, returned 'old' values. Reading again in the ISR after 100ms gave 'changed' value, but waiting in ISR is not a good solution. So only a trigger message is transmitted on each ISR trigger.
+
+```yaml
+digital_inputs:
+  - name: button_left
+    module: raspberrypi
+    pin: 23
+    interrupt_payload: "trigger"
+    pullup: no
+    pulldown: yes
+    interrupt: falling
+    bouncetime: 200
+```
+
 ### Modules
 
 The IO modules are pluggable and multiple may be used at once. For example, if you have a Raspberry PI with some GPIO pins in use and also a PCF8574 IO expander on the I2C bus, you'd list two modules in the `gpio_modules` section and set up the inputs and outputs accordingly:
@@ -214,6 +254,11 @@ gpio_modules:
     module: pcf8574
     i2c_bus_num: 1
     chip_addr: 0x20
+
+  - name: orangepi
+    module: orangepi
+    board: r1
+    mode: board
 
 digital_inputs:
   - name: button
