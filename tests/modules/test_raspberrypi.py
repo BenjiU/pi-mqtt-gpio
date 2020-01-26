@@ -43,7 +43,7 @@ def fix_raspberrypi_setup_teardown():
     # clean up the gpios after each test
     gpio.cleanup()
 
-def gpio_testcallback(handle, pin, value):
+def gpio_testcallback(handle, pin):
     '''
     callback function for test interrupts, count the calls of this function
     and store a given handle.
