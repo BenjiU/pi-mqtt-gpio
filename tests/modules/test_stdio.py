@@ -27,3 +27,9 @@ def test_stdio_set_pin():
 def test_stdio_get_pin():
     value = gpio.get_pin(5)
     assert value == False
+    
+def test_stdio_setup_interrupt_not_implemented():
+
+    with pytest.raises(NotImplementedError):
+        gpio.setup_interrupt(None, None, None, None, None)
+
