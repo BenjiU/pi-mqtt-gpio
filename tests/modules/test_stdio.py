@@ -12,7 +12,14 @@ def test_stdio_init():
 def test_stdio_setup_pin():
     config = {'initial' : None}
     gpio.setup_pin(5, PinDirection.INPUT, PinPullup.OFF, config)
-    
+
+def test_stdio_setup_pin_initial_low():
+    config = {'initial' : "high"}
+    gpio.setup_pin(5, PinDirection.INPUT, PinPullup.OFF, config)
+
+def test_stdio_setup_pin_initial_high():
+    config = {'initial' : "low"}
+    gpio.setup_pin(5, PinDirection.INPUT, PinPullup.OFF, config)
     
 def test_stdio_set_pin():
     gpio.set_pin(5, True)

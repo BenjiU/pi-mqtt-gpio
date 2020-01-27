@@ -63,7 +63,7 @@ class GPIO(GenericGPIO):
         try:
             self.io.setup(pin, direction, pull_up_down=pullup, initial=initial)
         except ValueError as e:
-            raise IOError("channel %d setup failed" % pin) from e
+            raise IOError("channel %d setup failed: %d" % (pin, e))
 
     def set_pin(self, pin, value):
         self.io.output(pin, value)
